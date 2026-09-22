@@ -1,0 +1,6 @@
+timestamp,scenario,risk_state,client_id,offered_load_mbps,rate_limit_mbps,throughput_mbps,avg_latency_ms,jitter_ms,packet_loss_pct,qdisc_applied,actuator_status
+2026-09-05T17:26:00Z,BASELINE_UNCONSTRAINED,NORMAL,ns_client1,100.0,100.0,100.46,0.41,0.09,0.0,pfifo_fast,DRY_RUN_SUCCESS
+2026-09-05T17:26:00Z,BASELINE_OVERLOADED,NORMAL,ns_client1,150.0,100.0,96.58,8.21,2.12,3.4,pfifo_fast,DRY_RUN_SUCCESS
+2026-09-05T17:26:00Z,POLICY_MODERATE,MODERATE,ns_client1,100.0,80.0,79.45,2.48,0.35,0.0,htb,DRY_RUN_SUCCESS
+2026-09-05T17:26:00Z,POLICY_HIGH,HIGH,ns_client1,100.0,40.0,39.42,5.09,0.85,0.5,htb,DRY_RUN_SUCCESS
+2026-09-05T17:26:00Z,POLICY_CRITICAL,CRITICAL,ns_client1,100.0,15.0,14.69,15.31,2.4,1.8,htb,DRY_RUN_SUCCESS

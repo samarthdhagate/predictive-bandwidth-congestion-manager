@@ -1,0 +1,50 @@
+# Config for Controlled Network Testbed QoS Policies
+
+testbed:
+  name: "wifi_congestion_management_testbed"
+  router_interface: "veth_r_s"
+  server_interface: "veth_s_r"
+  safety_check_interface_prefix: "veth_"
+  default_enforcement_enabled: false
+
+# HTB Rate and Class Parameters (Configurable, no hardcoded production rates)
+policies:
+  NORMAL:
+    description: "Baseline unconstrained best-effort forwarding"
+    qdisc: "pfifo_fast"
+    rate_limit_mbps: 100
+    ceil_mbps: 100
+    latency_ms: 0
+    jitter_ms: 0
+    loss_percent: 0.0
+    buffer_kb: 50
+
+  MODERATE:
+    description: "Enhanced telemetry polling; prepare traffic class queues"
+    qdisc: "htb"
+    rate_limit_mbps: 80
+    ceil_mbps: 100
+    latency_ms: 2
+    jitter_ms: 1
+    loss_percent: 0.0
+    buffer_kb: 40
+
+  HIGH:
+    description: "Proactive rate shaping; prioritize interactive flows and constrain bulk transfers"
+    qdisc: "htb"
+    rate_limit_mbps: 40
+    ceil_mbps: 50
+    latency_ms: 5
+    jitter_ms: 2
+    loss_percent: 0.5
+    buffer_kb: 25
+
+  CRITICAL:
+    description: "Strict QoS rate-limiting; aggressive buffer management and packet policing"
+    qdisc: "htb"
+    rate_limit_mbps: 15
+    ceil_mbps: 20
+    latency_ms: 15
+    jitter_ms: 5
+    loss_percent: 2.0
+    buffer_kb: 15

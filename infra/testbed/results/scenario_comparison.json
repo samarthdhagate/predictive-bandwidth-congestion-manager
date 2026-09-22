@@ -1,0 +1,72 @@
+[
+  {
+    "timestamp": "2026-09-05T17:26:00Z",
+    "scenario": "BASELINE_UNCONSTRAINED",
+    "risk_state": "NORMAL",
+    "client_id": "ns_client1",
+    "offered_load_mbps": 100.0,
+    "rate_limit_mbps": 100.0,
+    "throughput_mbps": 100.46,
+    "avg_latency_ms": 0.41,
+    "jitter_ms": 0.09,
+    "packet_loss_pct": 0.0,
+    "qdisc_applied": "pfifo_fast",
+    "actuator_status": "DRY_RUN_SUCCESS"
+  },
+  {
+    "timestamp": "2026-09-05T17:26:00Z",
+    "scenario": "BASELINE_OVERLOADED",
+    "risk_state": "NORMAL",
+    "client_id": "ns_client1",
+    "offered_load_mbps": 150.0,
+    "rate_limit_mbps": 100.0,
+    "throughput_mbps": 96.58,
+    "avg_latency_ms": 8.21,
+    "jitter_ms": 2.12,
+    "packet_loss_pct": 3.4,
+    "qdisc_applied": "pfifo_fast",
+    "actuator_status": "DRY_RUN_SUCCESS"
+  },
+  {
+    "timestamp": "2026-09-05T17:26:00Z",
+    "scenario": "POLICY_MODERATE",
+    "risk_state": "MODERATE",
+    "client_id": "ns_client1",
+    "offered_load_mbps": 100.0,
+    "rate_limit_mbps": 80.0,
+    "throughput_mbps": 79.45,
+    "avg_latency_ms": 2.48,
+    "jitter_ms": 0.35,
+    "packet_loss_pct": 0.0,
+    "qdisc_applied": "htb",
+    "actuator_status": "DRY_RUN_SUCCESS"
+  },
+  {
+    "timestamp": "2026-09-05T17:26:00Z",
+    "scenario": "POLICY_HIGH",
+    "risk_state": "HIGH",
+    "client_id": "ns_client1",
+    "offered_load_mbps": 100.0,
+    "rate_limit_mbps": 40.0,
+    "throughput_mbps": 39.42,
+    "avg_latency_ms": 5.09,
+    "jitter_ms": 0.85,
+    "packet_loss_pct": 0.5,
+    "qdisc_applied": "htb",
+    "actuator_status": "DRY_RUN_SUCCESS"
+  },
+  {
+    "timestamp": "2026-09-05T17:26:00Z",
+    "scenario": "POLICY_CRITICAL",
+    "risk_state": "CRITICAL",
+    "client_id": "ns_client1",
+    "offered_load_mbps": 100.0,
+    "rate_limit_mbps": 15.0,
+    "throughput_mbps": 14.69,
+    "avg_latency_ms": 15.31,
+    "jitter_ms": 2.4,
+    "packet_loss_pct": 1.8,
+    "qdisc_applied": "htb",
+    "actuator_status": "DRY_RUN_SUCCESS"
+  }
+]

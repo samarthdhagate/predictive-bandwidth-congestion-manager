@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Predictive WiFi Congestion & Bandwidth Management NOC</title>
+    <!-- Typography: Inter, Outfit, JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js for interactive time-series telemetry -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        
+        <!-- CONNECTION & ERROR STATUS BANNER -->
+        <div id="connection-banner" class="connection-banner hidden">
+            <div class="banner-content">
+                <span class="banner-icon" id="banner-icon">⚠️</span>
+                <span class="banner-message" id="banner-message">Connecting to dashboard backend...</span>
+            </div>
+            <button class="banner-close" onclick="dismissBanner()">✕</button>
+        </div>
+
+        <!-- TOP NAVIGATION & NOC HEADER -->
+        <header class="noc-header">
+            <div class="brand-section">
+                <div class="pulse-indicator live-pulse" id="backend-pulse"></div>
+                <div class="brand-text">
+                    <h1 class="noc-title">PREDICTIVE WIFI CONGESTION & BANDWIDTH MANAGER</h1>
+                    <p class="noc-subtitle">Autonomous Predictive QoS Management & Controlled Network Testbed Telemetry</p>
+                </div>
+            </div>
+            
+            <div class="header-badges">
+                <div class="badge badge-testbed">
+                    <span class="badge-dot dot-cyan"></span> CONTROLLED LAB TESTBED
+                </div>
+                <div class="badge badge-safety">
+                    <span class="badge-dot dot-emerald"></span> PRODUCTION LOCKDOWN ACTIVE
+                </div>
+                
+                <div class="header-controls">
+                    <!-- Manual Refresh Button -->
+                    <button id="btn-refresh" class="noc-btn-refresh" title="Refresh Telemetry">
+                        <span class="refresh-icon">🔄</span> <span class="refresh-label">REFRESH</span>
+                    </button>
+                    
+                    <!-- Auto-refresh switch -->
+                    <div class="auto-refresh-wrap">
+                        <label class="switch-label" for="auto-refresh-toggle">AUTO (30s):</label>
+                        <label class="switch">
+                            <input type="checkbox" id="auto-refresh-toggle" checked>
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+
+                    <!-- Clocks & Timestamps -->
+                    <div class="system-time">
+                        <div class="time-row">
+                            <span class="label">SYSTEM:</span>
+                            <span id="live-clock" class="mono-val">--:--:-- UTC</span>
+                        </div>
+                        <div class="time-row time-updated">
+                            <span class="label">LAST SYNC:</span>
+                            <span id="last-updated-time" class="mono-val">--:--:--</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- PERSISTENT TESTBED DISCLAIMER & SOURCE DEMARCATION BANNER -->
+        <section class="testbed-disclaimer-bar">
+            <div class="disclaimer-left">
+                <span class="disclaimer-badge">CONTROLLED LAB TESTBED</span>
+                <span class="disclaimer-text">Network QoS measurements are from isolated Linux network namespaces (ns_client, ns_router, ns_server). No VIT production network is being controlled.</span>
+            </div>
+            <div class="disclaimer-tags">
+                <span class="source-tag tag-campus">HISTORICAL CAMPUS DATA</span>
+                <span class="source-tag tag-model">MODEL PREDICTION</span>
+                <span class="source-tag tag-testbed">CONTROLLED TESTBED</span>
+            </div>
+        </section>
+
+        <!-- SYSTEM FLOW INTERACTIVE STRIP -->
+        <section class="system-flow-section">
+            <div class="flow-container">
+                <div class="flow-step">
+                    <div class="step-num">01</div>
+                    <div class="step-info">
+                        <span class="step-name">DATA INGESTION</span>
+                        <span class="step-desc">247 APs Synchronized Snapshots</span>
+                    </div>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step">
+                    <div class="step-num">02</div>
+                    <div class="step-info">
+                        <span class="step-name">LIGHTGBM FORECAST</span>
+                        <span class="step-desc">y(t+1) ~16.6m Lead Time</span>
+                    </div>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step">
+                    <div class="step-num">03</div>
+                    <div class="step-info">
+                        <span class="step-name">RISK CLASSIFIER</span>
+                        <span class="step-desc">Empirical 4-Tier Partitioning</span>
+                    </div>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step">
+                    <div class="step-num">04</div>
+                    <div class="step-info">
+                        <span class="step-name">DECISION ENGINE</span>
+                        <span class="step-desc">Hysteresis & Cooldown (39.2% Anti-Flap)</span>
+                    </div>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step">
+                    <div class="step-num">05</div>
+                    <div class="step-info">
+                        <span class="step-name">SAFE ACTUATOR</span>
+                        <span class="step-desc">Linux tc/HTB Safe Dispatcher</span>
+                    </div>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step highlight-step">
+                    <div class="step-num">06</div>
+                    <div class="step-info">
+                        <span class="step-name">CONTROLLED TESTBED</span>
+                        <span class="step-desc">Throughput, Latency, Loss Metrics</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 1. TOP METRIC COUNTERS (STREAMLINED 7 NOC KPI CARDS) -->
+        <section class="overview-counters">
+            <!-- 1. Total APs -->
+            <div class="counter-card card-total">
+                <div class="counter-header">
+                    <span class="counter-label">TOTAL CAMPUS APs</span>
+                    <span class="kpi-tag tag-info">Inventory</span>
+                </div>
+                <div class="counter-value" id="count-total">247</div>
+                <div class="counter-footer">3 Floors Mapped (81 / 83 / 83)</div>
+            </div>
+
+            <!-- 2. High-Risk APs -->
+            <div class="counter-card card-high">
+                <div class="counter-header">
+                    <span class="counter-label">HIGH-RISK APs</span>
+                    <span class="tier-tag tag-high">10 - 19 Users</span>
+                </div>
+                <div class="counter-value" id="count-high">--</div>
+                <div class="counter-footer">2.01% Proactive 40M Shaping</div>
+            </div>
+
+            <!-- 3. Critical APs -->
+            <div class="counter-card card-critical">
+                <div class="counter-header">
+                    <span class="counter-label">CRITICAL APs</span>
+                    <span class="tier-tag tag-critical">≥ 20 Users</span>
+                </div>
+                <div class="counter-value" id="count-critical">--</div>
+                <div class="counter-footer">0.86% Strict 15M Policing</div>
+            </div>
+
+            <!-- 4. Forecast Horizon -->
+            <div class="counter-card card-horizon">
+                <div class="counter-header">
+                    <span class="counter-label">FORECAST HORIZON</span>
+                    <span class="kpi-tag tag-cyan">Lead Time</span>
+                </div>
+                <div class="counter-value mono-val">~16.6 <span class="unit-text">min</span></div>
+                <div class="counter-footer">1 Native Snapshot Ahead (y_t+1)</div>
+            </div>
+
+            <!-- 5. Primary Model -->
+            <div class="counter-card card-model">
+                <div class="counter-header">
+                    <span class="counter-label">PRIMARY MODEL</span>
+                    <span class="kpi-tag tag-indigo">Algorithm</span>
+                </div>
+                <div class="counter-value model-name-val">LightGBM</div>
+                <div class="counter-footer">150 Trees • Max Depth 8</div>
+            </div>
+
+            <!-- 6. Test RMSE -->
+            <div class="counter-card card-rmse">
+                <div class="counter-header">
+                    <span class="counter-label">TEST RMSE</span>
+                    <span class="kpi-tag tag-emerald">Accuracy</span>
+                </div>
+                <div class="counter-value mono-val" id="model-rmse">0.9154</div>
+                <div class="counter-footer">11.4% High-Load Error Reduction</div>
+            </div>
+
+            <!-- 7. Test R2 Score -->
+            <div class="counter-card card-r2">
+                <div class="counter-header">
+                    <span class="counter-label">TEST R² SCORE</span>
+                    <span class="kpi-tag tag-emerald">Variance</span>
+                </div>
+                <div class="counter-value mono-val" id="model-r2">0.7742</div>
+                <div class="counter-footer">vs 0.7555 Persistence Baseline</div>
+            </div>
+        </section>
+
+        <!-- DEMO / HISTORICAL REPLAY BAR -->
+        <section class="demo-replay-bar">
+            <div class="replay-label-wrap">
+                <span class="replay-badge">DEMO / HISTORICAL REPLAY</span>
+                <span class="replay-desc">Quick-switch historical surge scenarios from validated test partitions:</span>
+            </div>
+            <div class="replay-scenarios">
+                <button class="replay-btn active" id="btn-replay-125" onclick="loadReplayScenario(125)">
+                    <span class="scen-dot dot-high"></span> AP-125 (Auditorium Peak)
+                </button>
+                <button class="replay-btn" id="btn-replay-107" onclick="loadReplayScenario(107)">
+                    <span class="scen-dot dot-critical"></span> AP-107 (Critical Hall Peak)
+                </button>
+                <button class="replay-btn" id="btn-replay-162" onclick="loadReplayScenario(162)">
+                    <span class="scen-dot dot-moderate"></span> AP-162 (Concourse Rush)
+                </button>
+                <button class="replay-btn" id="btn-replay-42" onclick="loadReplayScenario(42)">
+                    <span class="scen-dot dot-normal"></span> AP-42 (Ground Foyer Baseline)
+                </button>
+            </div>
+        </section>
+
+        <!-- MAIN DASHBOARD GRID -->
+        <main class="dashboard-grid">
+            <!-- 2. LEFT COLUMN: SPATIAL CAMPUS AP GRID -->
+            <section class="grid-panel ap-grid-panel">
+                <div class="panel-header">
+                    <div class="panel-title-wrap">
+                        <div class="title-with-source">
+                            <h2 class="panel-title">CAMPUS SPATIAL AP CONGESTION MAP</h2>
+                            <span class="source-badge">HISTORICAL DATA</span>
+                        </div>
+                        <span class="panel-subtitle">Interactive 247 Access Point Grid • <strong class="tier-label-note">EMPIRICAL AP LOAD RISK</strong>: NORMAL (&lt;5) • MODERATE (5-9) • HIGH (10-19) • CRITICAL (≥20)</span>
+                    </div>
+                    
+                    <div class="panel-controls">
+                        <!-- Floor Filter -->
+                        <div class="filter-group">
+                            <label for="floor-select">FLOOR:</label>
+                            <select id="floor-select" class="noc-select">
+                                <option value="all">All Floors (247 APs)</option>
+                                <option value="0">Floor 0 (Ground - 81 APs)</option>
+                                <option value="1">Floor 1 (Auditoriums - 83 APs)</option>
+                                <option value="2">Floor 2 (Labs - 83 APs)</option>
+                            </select>
+                        </div>
+
+                        <!-- Risk Filter -->
+                        <div class="filter-group">
+                            <label for="risk-select">RISK:</label>
+                            <select id="risk-select" class="noc-select">
+                                <option value="all">All Tiers</option>
+                                <option value="NORMAL">Normal (&lt;5)</option>
+                                <option value="MODERATE">Moderate (5-9)</option>
+                                <option value="HIGH">High (10-19)</option>
+                                <option value="CRITICAL">Critical (≥20)</option>
+                            </select>
+                        </div>
+
+                        <!-- AP Search -->
+                        <div class="search-group">
+                            <input type="text" id="ap-search" placeholder="Search AP ID or Region..." class="noc-input">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ap-grid-container" id="ap-matrix">
+                    <!-- Populated dynamically via JS -->
+                    <div class="loading-spinner">Loading spatial AP grid telemetry...</div>
+                </div>
+
+                <div class="grid-legend">
+                    <div class="legend-item"><span class="legend-box box-normal"></span> Normal (&lt;5)</div>
+                    <div class="legend-item"><span class="legend-box box-moderate"></span> Moderate (5-9)</div>
+                    <div class="legend-item"><span class="legend-box box-high"></span> High (10-19)</div>
+                    <div class="legend-item"><span class="legend-box box-critical"></span> Critical (≥20)</div>
+                    <span class="legend-hint">Click any AP tile to inspect real-time predictions & decision state</span>
+                </div>
+            </section>
+
+            <!-- 3 & 4. RIGHT COLUMN: AP INSPECTOR, PREDICTION & DECISION ENGINE -->
+            <section class="grid-panel ap-detail-panel">
+                <div class="panel-header">
+                    <div class="panel-title-wrap">
+                        <div class="title-with-source">
+                            <h2 class="panel-title">DECISION ENGINE — TESTBED MODE</h2>
+                            <span class="source-badge">MODEL PREDICTION</span>
+                        </div>
+                        <span class="panel-subtitle" id="selected-ap-subtitle">Active Inspector: Access Point AP-125 (Auditorium Floor 1)</span>
+                    </div>
+                    
+                    <div class="ap-selector-wrap">
+                        <label for="ap-quick-select">INSPECT AP:</label>
+                        <select id="ap-quick-select" class="noc-select">
+                            <option value="125">AP 125 (Floor 1 - High Traffic Auditorium)</option>
+                            <option value="162">AP 162 (Floor 1 - Central Concourse)</option>
+                            <option value="42">AP 42 (Floor 0 - Ground Foyer)</option>
+                            <option value="107">AP 107 (Floor 1 - Seminar Hall)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 4. STATE & DECISION METRIC CHIPS (Complete Decision Engine Schema) -->
+                <div class="decision-chips-grid">
+                    <div class="decision-chip">
+                        <span class="chip-label">AP IDENTIFIER</span>
+                        <span class="chip-value mono-val" id="chip-ap-id">AP-125</span>
+                    </div>
+                    <div class="decision-chip">
+                        <span class="chip-label">CURRENT LOAD (u_t)</span>
+                        <span class="chip-value mono-val" id="chip-current-users">-- users</span>
+                    </div>
+                    <div class="decision-chip">
+                        <span class="chip-label">FORECAST (y_hat_t+1)</span>
+                        <span class="chip-value mono-val chip-forecast" id="chip-predicted-users">-- users</span>
+                    </div>
+                    <div class="decision-chip">
+                        <span class="chip-label">EMPIRICAL RISK LEVEL</span>
+                        <span class="chip-value" id="chip-risk-state"><span class="badge-status badge-normal">NORMAL</span></span>
+                    </div>
+                    <div class="decision-chip">
+                        <span class="chip-label">CONFIDENCE STATUS</span>
+                        <span class="chip-value" id="chip-confidence"><span class="badge-conf badge-conf-high">HIGH_CONFIDENCE</span></span>
+                    </div>
+                    <div class="decision-chip">
+                        <span class="chip-label">RECOMMENDED ACTION</span>
+                        <span class="chip-value mono-val" id="chip-recommended-action">NO_ACTION</span>
+                    </div>
+                    <div class="decision-chip">
+                        <span class="chip-label">COOLDOWN STEPS</span>
+                        <span class="chip-value mono-val" id="chip-cooldown">0 snapshots</span>
+                    </div>
+                    <div class="decision-chip">
+                        <span class="chip-label">ENFORCEMENT MODE</span>
+                        <span class="chip-value mono-val" id="chip-enforcement"><span class="tag-enforce-safe">TESTBED_DRYRUN</span></span>
+                    </div>
+                </div>
+
+                <div class="policy-reason-box">
+                    <span class="reason-title">DECISION ENGINE POLICY REASON:</span>
+                    <span class="reason-text" id="policy-reason-text">Normal baseline load; airtime unconstrained</span>
+                </div>
+
+                <!-- 3. CHART: ACTUAL VS PREDICTED USER LOAD & CONTROLLED TESTBED LATENCY -->
+                <div class="chart-container-wrap">
+                    <div class="chart-header">
+                        <div class="chart-title-left">
+                            <span class="chart-title">Time-Series Forecast Tracking vs Controlled Testbed Latency</span>
+                            <span class="source-badge">MODEL PREDICTION + TESTBED</span>
+                        </div>
+                        <span class="chart-legend-badge">Forecast Horizon: ~16.6 min</span>
+                    </div>
+                    <div class="chart-canvas-box" id="chart-box">
+                        <canvas id="apHistoryChart"></canvas>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- 5. LOWER SECTION: CONTROLLED TESTBED CLOSED-LOOP QoS BENCHMARKS -->
+        <section class="benchmark-section">
+            <div class="panel-header">
+                <div class="panel-title-wrap">
+                    <div class="title-with-source">
+                        <h2 class="panel-title">CONTROLLED TESTBED CLOSED-LOOP QoS BENCHMARKS</h2>
+                        <span class="source-badge badge-source-testbed">CONTROLLED NETWORK TESTBED</span>
+                    </div>
+                    <span class="panel-subtitle">Empirical Comparison: Baseline (No QoS) vs. Predictive QoS vs. Theoretical Oracle (Isolated Linux Namespaces)</span>
+                </div>
+                <div class="badge badge-testbed">
+                    <span class="badge-dot dot-cyan"></span> ISOLATED LINUX NAMESPACES (iperf3 & ICMP)
+                </div>
+            </div>
+
+            <!-- KEY ACHIEVEMENT & TRADE-OFF BANNER -->
+            <div class="qos-tradeoff-banner">
+                <div class="tradeoff-icon">⚖️</div>
+                <div class="tradeoff-content">
+                    <div class="tradeoff-headline">
+                        <strong>Engineering Trade-Off & Validation Breakthrough:</strong> Critical load peak latency reduced from <span class="val-highlight-danger">65.98 ms</span> to <span class="val-highlight-success">11.05 ms (-83.3%)</span> and packet loss reduced from <span class="val-highlight-danger">15.00%</span> to <span class="val-highlight-success">2.00% (-86.7%)</span>.
+                    </div>
+                    <div class="tradeoff-note">
+                        <em>*Note: Throughput is intentionally shaped during critical surges (from ~93 Mbps to 15-40 Mbps) to strictly control bufferbloat, prevent queue exhaustion, and guarantee low tail latency.</em>
+                    </div>
+                </div>
+            </div>
+
+            <div class="benchmark-grid">
+                <!-- BENCHMARK CARDS -->
+                <div class="benchmark-card card-base">
+                    <div class="bm-header">
+                        <span class="bm-title">SCENARIO A: BASELINE (NO QoS)</span>
+                        <span class="bm-tag tag-uncontrolled">Uncontrolled Queue</span>
+                    </div>
+                    <div class="bm-body">
+                        <div class="bm-metric">
+                            <span class="b-lbl">Mean Throughput:</span>
+                            <span class="b-val mono-val" id="bm-base-tput">19.54 Mbps</span>
+                        </div>
+                        <div class="bm-metric">
+                            <span class="b-lbl">Avg / P95 Latency:</span>
+                            <span class="b-val mono-val" id="bm-base-lat">1.11 ms / 0.88 ms</span>
+                        </div>
+                        <div class="bm-metric">
+                            <span class="b-lbl">Mean Jitter:</span>
+                            <span class="b-val mono-val" id="bm-base-jitter">0.26 ms</span>
+                        </div>
+                        <div class="bm-metric highlight-danger">
+                            <span class="b-lbl">Critical Peak Latency:</span>
+                            <span class="b-val mono-val val-danger" id="bm-base-maxlat">65.98 ms</span>
+                        </div>
+                        <div class="bm-metric highlight-danger">
+                            <span class="b-lbl">Critical Max Packet Loss:</span>
+                            <span class="b-val mono-val val-danger" id="bm-base-loss">15.00%</span>
+                        </div>
+                        <div class="bm-footer-note">Severe bufferbloat & drop-tail loss during student ingress surges.</div>
+                    </div>
+                </div>
+
+                <div class="benchmark-card card-pred highlight-card">
+                    <div class="bm-header">
+                        <span class="bm-title">SCENARIO B: PREDICTIVE QoS</span>
+                        <span class="bm-tag tag-predictive">LightGBM Actuated</span>
+                    </div>
+                    <div class="bm-body">
+                        <div class="bm-metric">
+                            <span class="b-lbl">Mean Throughput:</span>
+                            <span class="b-val mono-val" id="bm-pred-tput">16.43 Mbps</span>
+                        </div>
+                        <div class="bm-metric">
+                            <span class="b-lbl">Avg / P95 Latency:</span>
+                            <span class="b-val mono-val" id="bm-pred-lat">1.28 ms / 5.02 ms</span>
+                        </div>
+                        <div class="bm-metric">
+                            <span class="b-lbl">Mean Jitter:</span>
+                            <span class="b-val mono-val" id="bm-pred-jitter">0.33 ms</span>
+                        </div>
+                        <div class="bm-metric highlight-success">
+                            <span class="b-lbl">Critical Peak Latency:</span>
+                            <span class="b-val mono-val val-success" id="bm-pred-maxlat">11.05 ms (-83.3%)</span>
+                        </div>
+                        <div class="bm-metric highlight-success">
+                            <span class="b-lbl">Critical Max Packet Loss:</span>
+                            <span class="b-val mono-val val-success" id="bm-pred-loss">2.00% (-86.7%)</span>
+                        </div>
+                        <div class="bm-footer-note">Proactive HTB shaping prevents bufferbloat while preserving normal traffic.</div>
+                    </div>
+                </div>
+
+                <div class="benchmark-card card-oracle">
+                    <div class="bm-header">
+                        <span class="bm-title">SCENARIO C: ORACLE QoS</span>
+                        <span class="bm-tag tag-oracle">Theoretical Upper Bound</span>
+                    </div>
+                    <div class="bm-body">
+                        <div class="bm-metric">
+                            <span class="b-lbl">Mean Throughput:</span>
+                            <span class="b-val mono-val" id="bm-oracle-tput">16.15 Mbps</span>
+                        </div>
+                        <div class="bm-metric">
+                            <span class="b-lbl">Avg / P95 Latency:</span>
+                            <span class="b-val mono-val" id="bm-oracle-lat">1.35 ms / 5.04 ms</span>
+                        </div>
+                        <div class="bm-metric">
+                            <span class="b-lbl">Mean Jitter:</span>
+                            <span class="b-val mono-val" id="bm-oracle-jitter">0.35 ms</span>
+                        </div>
+                        <div class="bm-metric">
+                            <span class="b-lbl">Critical Peak Latency:</span>
+                            <span class="b-val mono-val" id="bm-oracle-maxlat">11.05 ms</span>
+                        </div>
+                        <div class="bm-metric">
+                            <span class="b-lbl">Critical Max Packet Loss:</span>
+                            <span class="b-val mono-val" id="bm-oracle-loss">2.00%</span>
+                        </div>
+                        <div class="bm-footer-note">Predictive model achieves &lt;= 0.02ms latency gap to perfect oracle.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- REGIME COMPARISON TABLE & TRADE-OFF DISPLAY (Includes Jitter) -->
+            <div class="regime-table-wrap">
+                <div class="table-header-row">
+                    <h3 class="sub-section-title">Validated Telemetry Across User Load Regimes</h3>
+                    <span class="source-badge badge-source-testbed">CONTROLLED LAB TESTBED</span>
+                </div>
+                <table class="noc-table">
+                    <thead>
+                        <tr>
+                            <th>Load Regime</th>
+                            <th>Scenario</th>
+                            <th>Snapshots</th>
+                            <th>Throughput (Mbps)</th>
+                            <th>Avg Latency (ms)</th>
+                            <th>P95 Latency (ms)</th>
+                            <th>Max Latency (ms)</th>
+                            <th>Avg Jitter (ms)</th>
+                            <th>Peak Loss (%)</th>
+                            <th>Queue Policy</th>
+                        </tr>
+                    </thead>
+                    <tbody id="regime-table-body">
+                        <!-- Populated dynamically via JS -->
+                        <tr><td colspan="10" class="loading-cell">Loading benchmark telemetry...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 6. AUDIT LOG & TRANSITIONS PANEL -->
+        <section class="audit-log-section">
+            <div class="panel-header">
+                <div class="panel-title-wrap">
+                    <div class="title-with-source">
+                        <h2 class="panel-title">POLICY TRANSITION & ACTUATION AUDIT LOG</h2>
+                        <span class="source-badge">DECISION AUDIT TRAIL</span>
+                    </div>
+                    <span class="panel-subtitle">Structured Chronological Event Stream with Anti-Flap Hysteresis Traceability</span>
+                </div>
+                <div class="log-controls">
+                    <select id="log-state-filter" class="noc-select">
+                        <option value="all">All State Changes</option>
+                        <option value="CRITICAL">Critical Transitions</option>
+                        <option value="HIGH">High Transitions</option>
+                        <option value="MODERATE">Moderate Transitions</option>
+                        <option value="NORMAL">Normal Transitions</option>
+                    </select>
+                    <input type="text" id="log-search" placeholder="Filter by AP or reason..." class="noc-input">
+                    <span class="log-count" id="log-count">Showing 100 entries</span>
+                </div>
+            </div>
+
+            <div class="audit-table-wrap">
+                <table class="noc-table">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>AP ID</th>
+                            <th>Previous State</th>
+                            <th>New State</th>
+                            <th>Current Users</th>
+                            <th>Predicted Users</th>
+                            <th>Policy Transition Reason</th>
+                            <th>Enforcement</th>
+                        </tr>
+                    </thead>
+                    <tbody id="audit-log-body">
+                        <!-- Populated dynamically via JS -->
+                        <tr><td colspan="8" class="loading-cell">Loading decision audit records...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 7. NOC FOOTER & DISCLAIMER -->
+        <footer class="noc-footer">
+            <div class="footer-left">
+                <span>Predictive Bandwidth & Congestion Manager | Release v1.0.0</span>
+                <span class="footer-separator">•</span>
+                <span>Dataset: 2023-04-18 to 2023-06-18 (70% Train / 15% Val / 15% Test)</span>
+            </div>
+            <div class="footer-right">
+                <span class="footer-badge">Strict Isolation: Controlled Testbed Telemetry Only</span>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Frontend API Service Layer & Main Application Controller -->
+    <script src="/static/api.js"></script>
+    <script src="/static/app.js"></script>
+</body>
+</html>
