@@ -1,0 +1,10 @@
+Metric / Percentile,User Count Value,Observations >= Threshold,Percentage of Dataset (%)
+50th Percentile,0.0,885989,100.0
+75th Percentile,2.0,267867,30.23
+85th Percentile,2.0,267867,30.23
+90th Percentile,3.0,119052,13.44
+95th Percentile,6.0,48091,5.43
+98th Percentile,12.0,19680,2.22
+99th Percentile,18.0,9723,1.1
+99.5th Percentile,24.0,4457,0.5
+99.9th Percentile,36.0,892,0.1

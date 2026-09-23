@@ -1,0 +1,4 @@
+Model,Regression MAE,Regression RMSE,R2 Score,High-Load (u>=10) RMSE,Congestion Precision (%),Congestion Recall (%),Congestion F1 (%),False Negative Rate (%)
+Persistence,0.2047,0.9527,0.7555,8.4274,67.16,67.23,67.2,32.77
+Random Forest,0.239,0.9171,0.7734,7.9744,73.94,53.82,62.3,46.18
+LightGBM,0.2453,0.9154,0.7742,7.9965,75.0,52.73,61.92,47.27

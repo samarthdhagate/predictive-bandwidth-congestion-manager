@@ -1,0 +1,76 @@
+{
+  "dataset_t1": {
+    "target_column": "target_t1",
+    "total_timestamps": 5125,
+    "total_rows": 1265875,
+    "train": {
+      "timestamps_count": 3587,
+      "rows_count": 885989,
+      "start_timestamp": "2023-04-18 01:30:28",
+      "end_timestamp": "2023-05-29 15:26:44"
+    },
+    "val": {
+      "timestamps_count": 768,
+      "rows_count": 189696,
+      "start_timestamp": "2023-05-29 15:43:18",
+      "end_timestamp": "2023-06-07 15:57:25"
+    },
+    "test": {
+      "timestamps_count": 770,
+      "rows_count": 190190,
+      "start_timestamp": "2023-06-07 16:14:44",
+      "end_timestamp": "2023-06-18 23:24:00"
+    },
+    "has_temporal_leakage": false
+  },
+  "dataset_t2": {
+    "target_column": "target_t2",
+    "total_timestamps": 5124,
+    "total_rows": 1265628,
+    "train": {
+      "timestamps_count": 3586,
+      "rows_count": 885742,
+      "start_timestamp": "2023-04-18 01:30:28",
+      "end_timestamp": "2023-05-29 15:10:13"
+    },
+    "val": {
+      "timestamps_count": 768,
+      "rows_count": 189696,
+      "start_timestamp": "2023-05-29 15:26:44",
+      "end_timestamp": "2023-06-07 15:40:40"
+    },
+    "test": {
+      "timestamps_count": 770,
+      "rows_count": 190190,
+      "start_timestamp": "2023-06-07 15:57:25",
+      "end_timestamp": "2023-06-18 23:00:32"
+    },
+    "has_temporal_leakage": false
+  },
+  "feature_columns_count": 23,
+  "feature_columns": [
+    "users",
+    "users_lag_1",
+    "users_lag_2",
+    "users_lag_3",
+    "rolling_mean_3",
+    "rolling_mean_6",
+    "rolling_std_3",
+    "rolling_std_6",
+    "rolling_max_6",
+    "users_change_1",
+    "users_change_2",
+    "floor",
+    "centroid_x",
+    "centroid_y",
+    "coverage_cells",
+    "neighbor_mean_users",
+    "neighbor_max_users",
+    "campus_total_users",
+    "floor_total_users",
+    "cos_hour",
+    "sin_hour",
+    "is_weekend",
+    "is_peak_hours"
+  ]
+}

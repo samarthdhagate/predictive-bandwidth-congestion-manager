@@ -1,0 +1,6 @@
+Model,Train MAE,Validation MAE,Test MAE,Validation RMSE,Test RMSE,Validation R2,Test R2,Test Within ±1 User (%),Test Within ±2 Users (%),Test MAE Improvement (%)
+Persistence,0.3598,0.259,0.2047,1.1061,0.9527,0.8023,0.7555,96.43,98.59,0.02
+Historical Mean,1.5453,1.3022,1.1672,2.4403,1.9832,0.0375,-0.0596,58.29,84.11,-470.07
+Random Forest,0.3724,0.2946,0.239,1.0285,0.9171,0.829,0.7734,93.76,98.0,-16.73
+HistGradientBoosting,0.3907,0.3002,0.2433,1.0135,0.916,0.834,0.7739,93.92,98.04,-18.83
+LightGBM,0.3848,0.2989,0.2453,1.0078,0.9154,0.8359,0.7742,93.95,98.04,-19.81

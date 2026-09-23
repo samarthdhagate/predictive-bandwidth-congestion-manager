@@ -16,13 +16,14 @@ env/
 .env.*
 !.env.example
 
-# Real network data - NEVER commit
+# Large raw & heavy training datasets (>50MB) - do not commit to git
 data/raw/*
-data/processed/*
 !data/raw/.gitkeep
-!data/processed/.gitkeep
+data/processed/campus_users_with_location.csv
+data/processed/ml_dataset_t1.csv
+data/processed/ml_dataset_t2.csv
 
-# Generated ML models
+# Generated ML binary models
 *.pkl
 *.joblib
 *.h5
